@@ -1,0 +1,14 @@
+name: video_loop_finder
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - opencv
+  - notebook
+  - matplotlib
+  - jupyter
+  - docopt
+  - schema
+  - ffmpeg-python
+  - ffmpeg=4.2=h1a5d6f3_0
+

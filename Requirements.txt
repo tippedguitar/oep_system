@@ -1,0 +1,13 @@
+pip install opencv-python==4.11.0.86
+
+pip install streamlit==1.43.2
+
+pip install cvzone==1.6.1
+
+pip install pvrecorder==1.2.6
+
+pip install matplotlib==3.10.1
+
+pip install mediapipe==0.10.21
+
+pip install imageio==2.37.0
