@@ -92,7 +92,7 @@ class OEP():
 
     # Loop Detection
     def loop_thread(self):
-        print("Loop detection thread started.....")
+        print("Loop detection thread started")
         while self.input:
             if self.check_for_loop:
                 process_frames = False
@@ -633,8 +633,8 @@ class OEP():
 
         # Kind of like finally
         print("Cleaning up resources...")
-        self.input = False 
-        self.tracking = False 
+        self.input = False
+        self.tracking = False
         self.check_audio = False
         video.release()
         cv2.destroyAllWindows()
