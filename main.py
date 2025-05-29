@@ -1,4 +1,4 @@
-#! C:\Users\Srinitish\Desktop\college\7seventhsem\Finalyrproject\Project\oep_system\myenv\Scripts\python.exe
+#! C:\Users\Srinitish\Desktop\college\7seventhsem\Finalyrproject\Project\oep_system_1\oep_system\myenv\Scripts\python.exe
 
 import sys
 import os
@@ -8,7 +8,6 @@ import cv2
 
 from oep_system import OEP
 from constants import DEFAULT_WEBCAM
-
 # Path to the UI images
 UI_FOLDER = "ui"
 SPLASH_SCREEN_IMAGE = os.path.join(UI_FOLDER, "splash_screen.png")

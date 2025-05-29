@@ -6,9 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from cvzone.HandTrackingModule import HandDetector
-from loop_detect.detect import VideoLoopFinder
+from detect import VideoLoopFinder
 from pvrecorder import PvRecorder
-from gaze_direction.face_Direction import face_tracking
+from face_Direction import face_tracking
 from matplotlib.animation import FuncAnimation
 
 
