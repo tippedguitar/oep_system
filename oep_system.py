@@ -38,6 +38,7 @@ class OEP():
         self.remainingTime = 0
         self.required_gesture = 0
         self.two_hands_warning_count = 0
+        self.captcha_counter = 0
 
         # face/eye/lip stuff
         self.tracking = True
@@ -90,6 +91,59 @@ class OEP():
         self.thresh_line, = self.ax.plot([], [], lw=1, color='red', linestyle='--', label='Threshold')
         self.ax.legend()
 
+        # Malpractice Score Tracking
+        self.monitoring_start_time = time.time()
+        self.last_score_check_time = time.time()
+        self.last_counter_reset_time = time.time()
+
+        self.time_gaze_deviated = 0.0
+        self.time_head_deviated = 0.0
+        self.time_audio_alert = 0.0
+        self.malpractice_score = 0.0    
+
+    def reset_malpractice_counters(self):
+        print("Resetting malpractice counters")
+        with self.lock:
+            self.time_gaze_deviated = 0.0
+            self.time_head_deviated = 0.0
+            self.time_audio_alert = 0.0
+            self.movement_count = 0
+            self.monitoring_start_time = time.time()
+            self.last_counter_reset_time = time.time()
+            # Keep last_score_check_time as is, or reset too? Resetting seems logical.
+            self.last_score_check_time = time.time()
+            self.malpractice_score = 0.0 # Reset the score itself
+
+
+    def calculate_malpractice_score(self, current_time):
+        """Calculates the malpractice score based on tracked metrics."""
+        with self.lock:
+            monitoring_duration = current_time - self.monitoring_start_time
+            
+            if monitoring_duration <= 0:
+                return 0.0
+
+            lip_rate = self.movement_count / monitoring_duration
+
+            gaze_deviation_percent = (self.time_gaze_deviated / monitoring_duration) * 100
+
+            head_deviation_percent = (self.time_head_deviated / monitoring_duration) * 100
+
+            audio_alert_percent = (self.time_audio_alert / monitoring_duration) * 100
+
+            score = (W_LIP_RATE * lip_rate) + \
+                    (W_GAZE_DEVIATION * gaze_deviation_percent) + \
+                    (W_HEAD_DEVIATION * head_deviation_percent) + \
+                    (W_AUDIO_ALERT * audio_alert_percent)
+
+            self.malpractice_score = score
+            # print(f"Score Calc: Dur={monitoring_duration:.1f}s, LipM={self.movement_count}, "
+            #       f"GazeT={self.time_gaze_deviated:.1f}s ({gaze_deviation_percent:.1f}%), "
+            #       f"HeadT={self.time_head_deviated:.1f}s ({head_deviation_percent:.1f}%), "
+            #       f"AudioT={self.time_audio_alert:.1f}s ({audio_alert_percent:.1f}%)")
+            # print(f"Calculated Score: {score:.2f}")
+            return score
+        
     # Loop Detection
     def loop_thread(self):
         print("Loop detection thread started")
@@ -373,7 +427,7 @@ class OEP():
         # print("Tracking thread finished.")
         
     def tracking_thread(self):
-        print("Tracking thread started.....")
+        print("Tracking thread started")
         while self.tracking and self.input: 
             local_frame_copy = None
 
@@ -391,7 +445,9 @@ class OEP():
                          # MALPRACTICE: MULTIPLE FACES DETECTED
                          print("MALPRACTICE (Tracking): Multiple faces detected! Stopping system.")
                          with self.lock:
-                              self.input = False
+                              self.show_text="MULTIPLE FACES DETECTED!!!"
+                              time.sleep(5)
+                            #   self.input = False
                               self.face_looks = "MULTIPLE FACES!"
                               self.eye_looks = ''
                               self.mesh_points = None
@@ -445,8 +501,13 @@ class OEP():
         threading.Thread(target=self.audio_thread, daemon=True).start()
         threading.Thread(target=self.tracking_thread, daemon=True).start()
 
+        last_frame_time = time.time()
+
         print("Starting main video processing loop...")
         while self.input:
+            current_frame_time = time.time()
+            delta_time = current_frame_time - last_frame_time
+            last_frame_time = current_frame_time
             try:
                 success, local_frame = video.read()
                 if not success:
@@ -486,7 +547,44 @@ class OEP():
                     eye_looks_val = self.eye_looks
                     face_looks_val = self.face_looks
                     movement_count_val = self.movement_count
+                    current_score = self.malpractice_score
+                
+                if not is_captcha_running:
+                    # Check eye gaze
+                    if eye_looks_val is not None and eye_looks_val.lower() in ['left', 'right']:
+                         with self.lock:
+                             self.time_gaze_deviated += delta_time
 
+                    # Check head pose
+                    if face_looks_val is not None and face_looks_val.lower() in ['left', 'right', 'up', 'down']:
+                         with self.lock:
+                            self.time_head_deviated += delta_time
+
+                    # Check audio alert
+                    if audio_alert_val is not None and "noise detected" in audio_alert_val.lower():
+                         with self.lock:
+                            self.time_audio_alert += delta_time
+
+
+                # Calculate Score and Trigger CAPTCHA Periodically
+                if not is_captcha_running and (current_frame_time - self.last_score_check_time) > SCORE_CALCULATION_INTERVAL:
+                    score = self.calculate_malpractice_score(current_frame_time) # Recalculates and updates self.malpractice_score
+                    self.last_score_check_time = current_frame_time
+
+                    if score > MALPRACTICE_SCORE_THRESHOLD:
+                        self.captcha_counter+=1
+                        print(f"Malpractice Score Threshold EXCEEDED: {score:.2f} > {MALPRACTICE_SCORE_THRESHOLD}")
+                        if not self.captcha_running and self.captcha_counter <5:
+                           self.start_captcha_thread()
+                           self.reset_malpractice_counters() 
+                        else:
+                            self.input = False
+                            break
+
+                # Periodic Counter Reset
+                if not is_captcha_running and (current_frame_time - self.last_counter_reset_time) > SCORE_RESET_INTERVAL:
+                     print(f"Periodic reset interval reached ({SCORE_RESET_INTERVAL}s).")
+                     self.reset_malpractice_counters()
 
                 # Display Frame and text to be shown
                 # Captcha Text
@@ -519,6 +617,8 @@ class OEP():
                     cv2.putText(display_frame, f"Audio: {audio_alert_val} (Thresh: {volume_thresh_val})", (10, status_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, audio_color, 2)
                     status_y += 25
 
+                cv2.putText(display_frame, f"Score: {current_score:.2f}", (10, status_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 150, 0), 2)
+                status_y += 25
 
                 # Tracking Info
                 if not is_captcha_running:
@@ -632,7 +732,7 @@ class OEP():
 
 
         # Kind of like finally
-        print("Cleaning up resources...")
+        print("Cleaning up resources")
         self.input = False
         self.tracking = False
         self.check_audio = False

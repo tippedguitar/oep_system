@@ -93,6 +93,7 @@ def face_tracking(frame):
 
         if num_faces>=2:
             print(f" MALPRACTICE IDENTIFIED: Detected {num_faces} faces!")
+            # time.sleep(10)
             return ("MULTIPLE_FACES", None)
         
         elif num_faces==1:
@@ -131,7 +132,7 @@ def face_tracking(frame):
             pnp_points_2D = np.delete(head_pose_points_3D, 2, axis=1)
             pnp_points_3D = head_pose_points_3D.astype(np.float64)
             pnp_points_2D = pnp_points_2D.astype(np.float64)
-
+    
             try:
                 success, rot_vec, trans_vec = cv.solvePnP(
                     pnp_points_3D, pnp_points_2D, cam_matrix, dist_matrix
@@ -171,6 +172,7 @@ def face_tracking(frame):
                 lefteye_iris_center_pos = mesh_points[lefteye_iris_center_indices_pos]
                 lefteye_rightcorner_pos = np.mean(mesh_points[lefteye_rightcorner_indices_pos], axis=0)
                 lefteye_leftcorner_pos = np.mean(mesh_points[lefteye_leftcorner_indices_pos], axis=0)
+                # lefteye_leftcorner_pos= np.mean(mesh_points[lefteye_rightcorner_indices_pos], axis=0)
 
                 righteye_top_points = mesh_points[righteye_top_indices_pos]
                 righteye_bot_points = mesh_points[righteye_bottom_indices_pos]
@@ -178,6 +180,7 @@ def face_tracking(frame):
                 righteye_iris_center_pos = mesh_points[righteye_iris_center_indices_pos]
                 righteye_rightcorner_pos = np.mean(mesh_points[righteye_rightcorner_indices_pos], axis=0)
                 righteye_leftcorner_pos = np.mean(mesh_points[righteye_leftcorner_indices_pos], axis=0)
+                # righteye_lleftcorner_pso= np.mean(mesh_points[righteye_leftcorner_indices_pos],axis=0)
 
                 if (lefteye_leftcorner_pos[0] - lefteye_rightcorner_pos[0]) != 0 and \
                         (righteye_leftcorner_pos[0] - righteye_rightcorner_pos[0]) != 0:

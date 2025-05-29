@@ -45,6 +45,19 @@ AUDIO_VOLUME_THRESHOLD = 100
 # Captcha stuff
 CAPTCHA_TIME_LIMIT = 15
 
+# Malpractice Score Settings
+MALPRACTICE_SCORE_THRESHOLD = 150.0 
+SCORE_CALCULATION_INTERVAL = 5.0   
+
+# Weights for Malpractice 
+W_LIP_RATE = 40.0       
+W_GAZE_DEVIATION = 1.0  
+W_HEAD_DEVIATION = 1.0  
+W_AUDIO_ALERT = 0.8     
+
+# Reseting counter
+SCORE_RESET_INTERVAL = 100000.0 
+
 # Plotting Stuff maybe not required?
 MAX_PLOT_POINTS = 100
 PLOT_TIME_WINDOW_SECONDS = 180 
