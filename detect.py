@@ -18,7 +18,7 @@ class VideoLoopFinder:
 
     def ahash(self, frame, res=64):
         i = Image.fromarray(frame)
-        i = i.resize((res, res), Image.ANTIALIAS).convert('L')
+        i = i.resize((res, res), Image.Resampling.LANCZOS).convert('L')
         pixels = list(i.getdata())
         avg = sum(pixels) / len(pixels)
         bits = "".join(map(lambda pixel: '1' if pixel < avg else '0', pixels))
@@ -43,6 +43,8 @@ class VideoLoopFinder:
 
                 self.seen_frames[hashed] = x
                 self.duplicate_frames[hashed] = [x]
+        print("SEEN FRAMES --> ", len(self.seen_frames))
+        print("DUPLICATE FRAMES --> ", len(self.duplicate_frames))
         # for i in self.duplicate_frames:
         # 	print(i)
         duplicates = [abs(self.duplicate_frames[x][0] - self.duplicate_frames[x][-1]) for x in self.duplicate_frames if
@@ -57,12 +59,14 @@ class VideoLoopFinder:
             if x > self.THRESHOLD:
                 loop_frame_count += 1
 
-        print("duplicate frame count ->  ", loop_frame_count)
-
+        print("-----duplicate frame count ->  ", loop_frame_count)
+        
         if len(self.seen_frames) > self.MAX_LIMIT:
             self.seen_frames.clear()
             self.duplicate_frames.clear()
-        if loop_frame_count > self.THRESHOLD:
+        print("LOOP FRAME COUNT --> ", loop_frame_count)
+        if loop_frame_count:
+            
             print("LOOP DETECTED")
             self.seen_frames.clear()
             self.duplicate_frames.clear()

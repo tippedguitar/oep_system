@@ -1,2 +1,8 @@
 myenv/
 __pycache__/
+dist/
+env/
+build/
+main.spec
+start.bat
+start.txt

@@ -80,7 +80,7 @@ def run_proctoring_system():
     createdObject = OEP()
 
     video_source = DEFAULT_WEBCAM
-    # video_source = r''
+    # video_source = r'D:\College\final_yr_prog\oep\loop_detect\videos\lip_video.mp4'
 
     # print(f"Using video source: {video_source}")
 

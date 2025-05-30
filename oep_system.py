@@ -147,11 +147,13 @@ class OEP():
     # Loop Detection
     def loop_thread(self):
         print("Loop detection thread started")
+        
         while self.input:
             if self.check_for_loop:
                 process_frames = False
                 frames_to_process = []
                 with self.lock:
+                    
                     if len(self.current_frames) >= self.FRAME and not self.captcha_running:
                         process_frames = True
                         frames_to_process = self.current_frames[:]
@@ -160,14 +162,18 @@ class OEP():
                 if process_frames:
                     try:
                         self.loop_check_count += 1
+                        print("LENGTH OF CURRENT FRAMES -> ", len(frames_to_process))
+                        
                         duplicate_frames = self.loop_finder.find_duplicates(frames_to_process)
                         isLooped, loop_frame_count = self.loop_finder.get_valid_duplicates(duplicate_frames)
                         self.loop_score += loop_frame_count
 
                         if isLooped and not self.captcha_running:
-                             with self.lock:
+                            with self.lock:
                                 self.is_loop = True
-                             self.start_captcha_thread()
+                                print("LOOPED DETECTED")
+                                
+                                self.start_captcha_thread()
                         else:
                             avg_score = self.loop_score / self.loop_check_count if self.loop_check_count > 0 else 0
                             print(f"Loop Analysis -> Score: {self.loop_score}, Checks: {self.loop_check_count}, Avg: {avg_score:.2f}")
@@ -356,13 +362,15 @@ class OEP():
 
                         if volume > self.volume_threshold:
                             if self.audio_alert != "Noise Detected":
-                                print(f"ALERT: Noise detected (Volume: {volume:.2f})")
+                                pass
+                                # print(f"ALERT: Noise detected (Volume: {volume:.2f})")
                             self.audio_alert = "Noise Detected"
                             temp_count = temp_count + 1 if flag == 1 else 0
                             flag = 1
                         else:
                             if self.audio_alert == "Noise Detected":
-                                print("ALERT: Noise level normal.")
+                                pass
+                                # print("ALERT: Noise level normal.")
                             self.audio_alert = "No noise detected"
                             temp_count = temp_count + 1 if flag == 0 else 0
                             flag = 0
@@ -598,7 +606,7 @@ class OEP():
                 if is_captcha_running:
                     status_text = "CAPTCHA RUNNING"
                     status_color = (0, 165, 255)
-                    if is_loop_detected_flag:
+                    if is_loop_detected_flag :
                          status_text += " (Loop Detected)"
                     else:
                          status_text += " (Manual Trigger)"

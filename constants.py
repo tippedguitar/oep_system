@@ -35,7 +35,8 @@ righteye_rightcorner_indices_pos = [380, 385]
 movement_threshold = 0.004
 
 # loop detection buffer
-LOOP_DETECTION_FRAME_BUFFER = 500
+LOOP_DETECTION_FRAME_BUFFER = 100
+MAX_LOOP_BUFFER = 10000
 
 # Audio Processing Settings
 AUDIO_DEVICE_INDEX = -1  
@@ -46,7 +47,7 @@ AUDIO_VOLUME_THRESHOLD = 100
 CAPTCHA_TIME_LIMIT = 15
 
 # Malpractice Score Settings
-MALPRACTICE_SCORE_THRESHOLD = 150.0 
+MALPRACTICE_SCORE_THRESHOLD = 1500 # 150 
 SCORE_CALCULATION_INTERVAL = 5.0   
 
 # Weights for Malpractice 
