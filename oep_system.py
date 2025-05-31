@@ -75,6 +75,7 @@ class OEP():
         self.check_audio = self.audio_available
         self.audio_frame = None
         self.current_audio = 0
+        self.count_limit = 250
 
         # plotting
         self.time = 0
@@ -374,6 +375,14 @@ class OEP():
                             self.audio_alert = "No noise detected"
                             temp_count = temp_count + 1 if flag == 0 else 0
                             flag = 0
+                        if (temp_count > self.count_limit):
+                    
+                            recent_data = self.audio_ys[-self.count_limit:]
+                            new_average_volume = np.mean(recent_data)
+                            volume_std = np.std(recent_data)
+
+                    with self.lock:
+                        self.volume_threshold = int((new_average_volume + volume_std * 0.5)*1.5)
 
                 except Exception as e:
                     print(f"Error processing audio frame: {e}")

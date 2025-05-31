@@ -15,6 +15,7 @@ START_BUTTON_IMAGE = os.path.join(UI_FOLDER, "start_button.png")
 
 def show_splash_screen():
     # Load the splash screen and button images
+    
     splash_image = cv2.imread(SPLASH_SCREEN_IMAGE)
     button_image = cv2.imread(START_BUTTON_IMAGE, cv2.IMREAD_UNCHANGED)  # Load with alpha channel
 
